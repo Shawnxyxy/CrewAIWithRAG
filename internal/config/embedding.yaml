@@ -1,0 +1,4 @@
+api_type: openai
+base_url: http://localhost:3000/v1
+api_key: sk-6kxLB9kLB7VW8jOxAe3aB261136e44989a31F19392162c4e
+model_name: text-embedding-v1
