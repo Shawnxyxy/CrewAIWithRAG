@@ -1,0 +1,26 @@
+# Build outputs
+/bin/
+/build/
+/out/
+
+# OS generated files
+.DS_Store
+*.swp
+*.tmp
+
+# Milvus / Docker runtime data
+volumes/
+logs/
+embedEtcd.yaml
+user.yaml
+standalone_embed.sh
+
+# Ignore IDE/editor configs
+.vscode/
+.idea/
+*.iml
+
+# Ignore generated binaries
+*.exe
+*.out
+*.app
