@@ -40,7 +40,7 @@ func (mc *MilvusClient) CreateCollection(collectionName string) error {
         WithField(entity.NewField().
             WithName("my_vector").
             WithDataType(entity.FieldTypeFloatVector).
-            WithDim(5)).
+            WithDim(1536)).
         WithField(entity.NewField().
             WithName("my_varchar").
             WithDataType(entity.FieldTypeVarChar).
