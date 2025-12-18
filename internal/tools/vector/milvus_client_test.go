@@ -28,7 +28,7 @@ func TestCreateCollection(t *testing.T) {
 	collectionName := "health_records_test"
 
 	// 调用创建 Collection
-	err = client.CreateCollection(collectionName)
+	err = client.CreateCollection(collectionName, 1536)
 	if err != nil {
 		t.Fatalf("CreateCollection failed: %v", err)
 	}

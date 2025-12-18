@@ -105,7 +105,7 @@ func TestSearchSingle(t *testing.T) {
 	if err != nil {
     	t.Fatalf("%v", err)
 	}
-	err = mc.CreateCollection(collectionName)
+	err = mc.CreateCollection(collectionName, 1536)
 	if err != nil {
 		t.Fatalf("CreateCollection failed: %v", err)
 	}
@@ -169,7 +169,7 @@ func TestSearchBatch(t *testing.T) {
 	if err != nil {
     	t.Fatalf("%v", err)
 	}
-	err = mc.CreateCollection(collectionName)
+	err = mc.CreateCollection(collectionName, 1536)
 	if err != nil {
 		t.Fatalf("CreateCollection failed: %v", err)
 	}

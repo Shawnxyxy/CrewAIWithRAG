@@ -26,7 +26,7 @@ func NewMilvusClient(addr string) (*MilvusClient, error) {
 	return &MilvusClient{Client: cli}, nil
 }
 
-func (mc *MilvusClient) CreateCollection(collectionName string) error {
+func (mc *MilvusClient) CreateCollection(collectionName string, dim int) error {
     ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
     defer cancel()
 	// 创建 Collection 的 Schema
@@ -40,7 +40,7 @@ func (mc *MilvusClient) CreateCollection(collectionName string) error {
         WithField(entity.NewField().
             WithName("my_vector").
             WithDataType(entity.FieldTypeFloatVector).
-            WithDim(1536)).
+            WithDim(int64(dim))).
         WithField(entity.NewField().
             WithName("my_varchar").
             WithDataType(entity.FieldTypeVarChar).

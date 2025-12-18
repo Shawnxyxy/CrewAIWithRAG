@@ -12,7 +12,7 @@ import (
 )
 
 func SearchInMilvus(query string, topK int) (string, error) {
-	embCfg, err := config.LoadEmbeddingConfig("internal/config/embedding.yaml")
+	embCfg, err := config.LoadEmbeddingConfig("../../config/embedding.yaml")
 	if err != nil {
 		return "", fmt.Errorf("加载 embedding 配置失败: %v", err)
 	}
