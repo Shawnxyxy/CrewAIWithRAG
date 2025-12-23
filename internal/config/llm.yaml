@@ -1,0 +1,5 @@
+api_type: openai
+base_url: http://localhost:3000/v1
+api_key: sk-NSbOQNyTx8ZZFQsL60Fc927a74994fCeAe14724f2bAfAdAb
+model_name: qwen-turbo
+timeout: 30
