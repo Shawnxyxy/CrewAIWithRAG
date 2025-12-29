@@ -2,9 +2,12 @@ package crew
 
 import (
 	"fmt"
+	"strings"
 
+	"crew_ai_with_rag/internal/tools/pdf"
 	"crew_ai_with_rag/internal/tools/vector"
 )
+
 // Agent统一接口
 type Agent interface {
 	Name() string
@@ -41,6 +44,10 @@ type Task struct {
 	Process Process
 }
 
+type ReportAgent struct {
+	LLMAgent
+}
+
 func NewCrew(tasks ...*Task) *Crew {
 	m := make(map[string]*Task)
 	for _, t := range tasks {
@@ -53,6 +60,15 @@ func NewLLMAgent(model string, client LLMClient) *LLMAgent {
 	return &LLMAgent{
 		Model:  model,
 		Client: client,
+	}
+}
+
+func NewReportAgent(client LLMClient) *ReportAgent {
+	return &ReportAgent{
+		LLMAgent: LLMAgent{
+			Model: "report_model",
+			Client: client,
+		},
 	}
 }
 
@@ -85,6 +101,10 @@ func (a *RetrievalAgent) Name() string {
 
 func (a *LLMAgent) Name() string {
 	return "llm_agent"
+}
+
+func (a *ReportAgent) Name() string {
+	return "report_agent"
 }
 
 func (a *RetrievalAgent) Run(query []string, topK int) ([]string, error) {
@@ -122,6 +142,35 @@ func (p *SequentialProcess) Run(input []string, topK int) ([]string, error) {
 	return output, nil
 }
 
+func (a *ReportAgent) Run(context []string, _ int) ([]string, error) {
+	if len(context) == 0 {
+		return nil, fmt.Errorf("empty context")
+	}
+	results := make([]string, len(context))
+	for i, ctx := range context {
+		resp, err := a.Client.Generate(ctx)
+		if err != nil {
+			return nil, err
+		}
+		results[i] = resp
+		cleanText := stripNonBMP(resp)
+		filename := fmt.Sprintf("report_%d.pdf", i)
+		msg := pdf.SaveText2Pdf(cleanText, filename)
+		fmt.Printf("%s\n", msg)
+	}
+	return results, nil
+}
+
 func (t *Task) Run(input []string, topK int) ([]string, error) {
 	return t.Process.Run(input, topK)
+}
+
+// 过滤emoji等字符
+func stripNonBMP(s string) string {
+	return strings.Map(func(r rune) rune {
+		if r > 0xFFFF {
+			return -1
+		}
+		return r
+	}, s)
 }
