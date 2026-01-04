@@ -1,14 +1,15 @@
 package crew
 
 import (
+	"fmt"
 	"os"
+	"path/filepath"
 	"testing"
 	"time"
-	"path/filepath"
-	"fmt"
 
 	"crew_ai_with_rag/internal/config"
 	"crew_ai_with_rag/internal/llm"
+	"crew_ai_with_rag/internal/tools/pdf"
 	"crew_ai_with_rag/internal/tools/vector"
 )
 
@@ -17,7 +18,7 @@ var llmCfg = &config.LLMConfig{
 	BaseURL:   "http://localhost:3000/v1",
 	APIKey:    "sk-NSbOQNyTx8ZZFQsL60Fc927a74994fCeAe14724f2bAfAdAb",
 	ModelName: "qwen-turbo",
-	Timeout: 30*time.Second,
+	Timeout:   30 * time.Second,
 }
 
 var embCfg = &config.EmbeddingConfig{
@@ -36,11 +37,20 @@ func TestCrewRetrievalToLlm(t *testing.T) {
 	if err := vs.EnsureCollection(1536); err != nil {
 		t.Fatalf("EnsureCollection failed: %v", err)
 	}
-	texts := []string{"用户张三，男性，45岁，有高血压病史，长期服用降压药。",
-	"用户李四，女性，32岁，近期出现失眠和焦虑症状。",
-	"健康建议：高血压患者应注意低盐饮食，保持规律运动。",
-	"心理健康建议：长期失眠可能与焦虑有关，建议进行心理咨询。",
-	"今天深圳天气晴朗，最高气温28度。"}
+	/*
+		texts := []string{"用户张三，男性，45岁，有高血压病史，长期服用降压药。",
+		"用户李四，女性，32岁，近期出现失眠和焦虑症状。",
+		"健康建议：高血压患者应注意低盐饮食，保持规律运动。",
+		"心理健康建议：长期失眠可能与焦虑有关，建议进行心理咨询。",
+		"今天深圳天气晴朗，最高气温28度。"}
+		if err := vs.InsertBatchTexts(texts); err != nil {
+			t.Fatalf("InsertBatchTexts failed: %v", err)
+		}
+	*/
+	texts, err := pdf.ReadDirTxts("internal/crew/input")
+	if err != nil {
+		t.Fatalf("ReadDirTxts failed: %v", err)
+	}
 	if err := vs.InsertBatchTexts(texts); err != nil {
 		t.Fatalf("InsertBatchTexts failed: %v", err)
 	}
@@ -61,16 +71,24 @@ func TestCrewRetrievalToLlm(t *testing.T) {
 	crew := NewCrew(task)
 	// ---- 执行retrieval ----
 	queries := []string{"高血压患者在日常生活中应该注意什么？",
-	"长期失眠和焦虑可能带来哪些健康问题？"}
+		"长期失眠和焦虑可能带来哪些健康问题？"}
 	results, err := crew.Run("report_task", queries, 2)
 	if err != nil {
 		t.Fatalf("crew run failed: %v", err)
+	}
+	cwd, err := os.Getwd()
+	if err != nil {
+		t.Fatalf("getwd failed: %v", err)
+	}
+	projectRoot, err := filepath.Abs(filepath.Join(cwd, "..", ".."))
+	if err != nil {
+		t.Fatalf("get project root failed: %v", err)
 	}
 	// ---- 打印结果 ----
 	for i, r := range results {
 		t.Logf("Query %d final output:\n%s", i, r)
 		// 检查 PDF 是否生成
-		pdfPath := filepath.Join("internal", "crew", "output", fmt.Sprintf("report_%d.pdf", i))
+		pdfPath := filepath.Join(projectRoot, "internal", "crew", "output", fmt.Sprintf("report_%d.pdf", i))
 		if _, err := os.Stat(pdfPath); os.IsNotExist(err) {
 			t.Fatalf("PDF not generated: %s", pdfPath)
 		} else {

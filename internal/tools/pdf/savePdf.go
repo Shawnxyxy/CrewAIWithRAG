@@ -27,7 +27,7 @@ func SaveText2Pdf(text, filename string) string {
 	}
 
     // 输出目录
-    outputDir := filepath.Join("internal", "crew", "output") // 相对路径
+    outputDir := filepath.Join(projectRoot, "internal", "crew", "output") // 相对路径
     if err := os.MkdirAll(outputDir, os.ModePerm); err != nil {
         return fmt.Sprintf("创建 output 目录失败: %v", err)
     }
