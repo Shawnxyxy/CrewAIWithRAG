@@ -50,22 +50,12 @@ func ReadTxtToTexts(txtPath string) ([]string, error) {
 	return results, nil
 }
 
-func ReadDirTxts(dir string) ([]string, error) {
-	cwd, err := os.Getwd()
-	if err != nil {
-		return nil, fmt.Errorf("getwd failed: %v", err)
-	}
-	projectRoot, err := filepath.Abs(filepath.Join(cwd, "..", ".."))
-	if err != nil {
-		return nil, fmt.Errorf("get project root failed: %v", err)
-	}
-
-	absDir := filepath.Join(projectRoot, dir)
+func ReadDirTxts(absDir string) ([]string, error) {
 	fmt.Println("Reading TXT files from directory:", absDir)
 
 	var allTexts []string
 
-	err = filepath.Walk(absDir, func(path string, info os.FileInfo, err error) error {
+	err := filepath.Walk(absDir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}

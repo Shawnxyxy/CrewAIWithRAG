@@ -47,7 +47,18 @@ func TestCrewRetrievalToLlm(t *testing.T) {
 			t.Fatalf("InsertBatchTexts failed: %v", err)
 		}
 	*/
-	texts, err := pdf.ReadDirTxts("internal/crew/input")
+	// ---- input Dir ----
+	cwd, err := os.Getwd()
+	if err != nil {
+		t.Fatalf("getwd failed: %v", err)
+	}
+	projectRoot, err := filepath.Abs(filepath.Join(cwd, "..", ".."))
+	if err != nil {
+		t.Fatalf("get project root failed: %v", err)
+	}
+	inputDir := filepath.Join(projectRoot, "internal", "crew", "input")
+	// ---- Load Texts ---- 
+	texts, err := pdf.ReadDirTxts(inputDir)
 	if err != nil {
 		t.Fatalf("ReadDirTxts failed: %v", err)
 	}
@@ -75,14 +86,6 @@ func TestCrewRetrievalToLlm(t *testing.T) {
 	results, err := crew.Run("report_task", queries, 2)
 	if err != nil {
 		t.Fatalf("crew run failed: %v", err)
-	}
-	cwd, err := os.Getwd()
-	if err != nil {
-		t.Fatalf("getwd failed: %v", err)
-	}
-	projectRoot, err := filepath.Abs(filepath.Join(cwd, "..", ".."))
-	if err != nil {
-		t.Fatalf("get project root failed: %v", err)
 	}
 	// ---- 打印结果 ----
 	for i, r := range results {
