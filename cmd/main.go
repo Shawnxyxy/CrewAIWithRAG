@@ -1,8 +1,12 @@
 package main
 
 import (
+	"bufio"
+	"flag"
 	"fmt"
 	"log"
+	"os"
+	"strings"
 
 	"crew_ai_with_rag/internal/config"
 	"crew_ai_with_rag/internal/crew"
@@ -13,6 +17,10 @@ import (
 
 func main() {
 	fmt.Println("Multi-Agent RAG System Starting...")
+	// ---- CLI flags ----
+	queryFlag := flag.String("query", "", "Input query for the Agent system")
+	topK := flag.Int("topk", 3, "Top-K retrieval results")
+	flag.Parse()
 
 	// ---- Config ----
 	llmCfg := &config.LLMConfig{
@@ -36,7 +44,7 @@ func main() {
 		"crew_prod_collection",
 		"my_varchar",
 		"my_vector",
-		3,
+		*topK,
 	)
 	if err != nil {
 		log.Fatal(err)
@@ -71,20 +79,48 @@ func main() {
 	task := crew.NewTask("report_task", process)
 	c := crew.NewCrew(task)
 
-	// ---- Run ----
-	queries := []string{
-		"高血压患者在日常生活中应该注意什么？",
+	// ---- Run mode ----
+	if *queryFlag != "" {
+		runOnce(c, *queryFlag)
+	} else {
+		runInteractive(c)
 	}
 
-	results, err := c.Run("report_task", queries, 1)
+	fmt.Println("System Finished")
+}
+
+func runOnce(c *crew.Crew, query string) {
+	results, err := c.Run("report_task", []string{query}, 1)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	for _, r := range results {
-		fmt.Println("Report generated:")
+		fmt.Println("\n===== Report Generated =====")
 		fmt.Println(r)
 	}
+}
 
-	fmt.Println("System Finished")
+func runInteractive(c *crew.Crew) {
+	reader := bufio.NewReader(os.Stdin) // 读取当前终端输入流
+	fmt.Println("Enter your query (type 'exit' to quit):")
+
+	for {
+		fmt.Print("> ")
+		input, err := reader.ReadString('\n')
+		if err != nil {
+			log.Println("read input failed:", err)
+			continue
+		}
+
+		query := strings.TrimSpace(input)
+		if query == "" {
+			continue
+		}
+		if strings.EqualFold(query, "exit") {
+			break
+		}
+
+		runOnce(c, query)
+	}
 }
